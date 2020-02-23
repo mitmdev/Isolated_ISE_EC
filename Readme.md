@@ -224,7 +224,7 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  TODO
 
 ###### Memory limits
- Due to ESP8266 memory limitations, it was impossible to export the whole set of api to the MQTT interface.<br/>
+ Due to ESP8266 memory limitations, it was impossible to export the whole set of APIs to the MQTT interface.<br/>
  Therefore, only the main functions have been made directly available (for implemented MQTT topics, see Measurement api)<br/>
  The remaining api calls are available to MQTT through the generic topic:</br>
 ~~~
