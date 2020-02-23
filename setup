@@ -1,0 +1,57 @@
+Sensors
+--
+tank water level
+water flow
+ph (ufire probe)
+ec (ufire K1 probe)
+solution temperature (ufire DS18B20)
+dht room
+--
+
+Pumps
+--
+recirculation
+irrigation
+refill
+
+-(peristaltic)
+ph -
+nutrient a
+nutrient b
+nutrient c
+--
+
+Additional components
+--
+heater resistance
+reverse osmosis system
+solenoids
+--
+
+Controllers
+--
+Siemens SIMATIC S7-1212C (interfacing additional components, water level, flow, dht and photodetector sensors + peristaltic pumps) (*)
+Siemens SM-1222 RLY expansion module (interfacing lights, fans, recirculation/irrigation/refill pumps) (*)
+ESP8266 (interfacing ph/ec/orp sensors)
+--
+
+Panels
+--
+HMI SIMATIC KTP400 (*)
+--
+
+Logic
+--
+Raspberry PI (o.s. rasbian + home assistant + node red + mosquitto MQTT broker compiled with websockets support) handling automations and scheduled tasks
+--
+
+Infrastructure
+--
+Mosquitto MQTT broker on rpi
+MQTT client on ESP8266
+MQTT client on S7-1212C
+Mikrotik hAP lite
+
+
+(*) SIMATIC components could be replaced by cheaper sensors/relays boards implementing MQTT protocol. 
+    The HMI panel that provides user interface can also be replaced by a tablet targeting a web page or a dedicated app (implementing MQTT)

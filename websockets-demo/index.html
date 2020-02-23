@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Ufire UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style> 
+		input[type=button], input[type=submit], input[type=reset] {
+		  background-color: #4CAF50;
+		  border: none;
+		  color: black;
+		  padding: 10px 6px;
+		  text-decoration: none;
+		  margin: 4px 2px;
+		  cursor: pointer;
+		  font-weight: bold;
+		}
+		input[type=text] {
+		  width: 200px;
+		  height: 30px;
+		}
+	</style>
+    <script src="./mqttws31.js" type="text/javascript"></script>
+    <script src="jquery.min.js" type="text/javascript"></script>
+    <script src="config.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+    var mqtt;
+
+    function MQTTconnect() {
+	if (typeof path == "undefined") {
+		path = '/mqtt';
+		// path = mac;
+	}
+        id = "mqtt-web_" + parseInt(Math.random() * 100, 10);
+	mqtt = new Paho.MQTT.Client(
+			host,
+			port,
+			path,
+			id
+	);
+        var options = {
+            timeout: 3,
+            useSSL: useTLS,
+            cleanSession: true,
+            onSuccess: onConnect,
+            onFailure: function (message) {
+                $('#status').val("Connection failed: " + message.errorMessage + "Retrying");
+                setTimeout(MQTTconnect, reconnectTimeout);
+            }
+        };
+        mqtt.onConnectionLost = onConnectionLost;
+        mqtt.onMessageArrived = onMessageArrived;
+
+        if (username != null) {
+            options.userName = username;
+            options.password = password;
+        }
+        console.log("Host="+ host + ", port=" + port + ", path=" + path + " TLS = " + useTLS + " username=" + username + " password=" + password);
+        mqtt.connect(options);
+    }
+
+    function onConnect() {
+        $('#status').val('Connected to ' + host + ':' + port + path);
+        // Connection succeeded; subscribe to our topic
+	topic = mac+"/#"
+        mqtt.subscribe(topic, {qos: 0});
+        $('#topic').val(topic);
+    }
+
+    function onConnectionLost(response) {
+        setTimeout(MQTTconnect, reconnectTimeout);
+        $('#status').val("connection lost: " + responseObject.errorMessage + ". Reconnecting");
+
+    };
+
+    function onMessageArrived(message) {
+
+        var topic = message.destinationName;
+        var payload = message.payloadString;	
+	var data = new Date().toLocaleString();
+	/*
+	for (var key in message) {
+		data += key + " : " + message[key] + "\n";
+	}
+	*/
+	var ts = new Date().getTime();
+	var color = topic.indexOf("/get") > -1 ? 'red' : 'green';
+        $('#ws').prepend('<li style="color:'+color+'">' + data + " | " + ts + " : " + topic + ' = ' + payload + '</li>');
+
+	topic = topic.replace(mac, '');
+	switch (topic) {
+		case "/ise/ph":
+			var v = Math.round( (7.0 - (payload / 59.2)) * 100)/100
+			$("#ph").val(v);
+		break;
+                case "/ise/temp":
+			var v = payload == -127 ? "N/A" : (Math.round( payload * 100 ) / 100 + " °C")
+			$("#ph_temp").val(v);
+                break;
+                case "/ec/ec":
+			$("#ec").val(payload + " uS");
+                break;
+                case "/ec/temp":
+			var v = payload == -127 ? "N/A" : (Math.round( payload * 100 ) / 100 + " °C")
+			$("#ec_temp").val(v);
+                break;
+		case "/heap":
+			$("#heap").val(payload);
+		break;
+	}
+
+    };
+
+    $(document).ready(function() {
+        MQTTconnect();
+    });
+
+    function get_ph() {
+	var t = mac + "/get/ise/ph"
+	var p = new Date().getTime() + " | " + id;
+	mqtt_send(t, p);
+    }
+
+    function get_ph_temp() {
+	var t = mac + "/get/ise/temp"
+	var p = new Date().getTime() + " | " + id;
+        mqtt_send(t, p);
+    }
+    
+    function get_ec() {
+	var t = mac + "/get/ec/ec"
+        var p = new Date().getTime() + " | " + id;
+        mqtt_send(t, p);
+    }
+    
+    function get_ec_temp() {
+        var t = mac + "/get/ec/temp"
+        var p = new Date().getTime() + " | " + id;
+        mqtt_send(t, p);
+    }
+    
+    
+    function custom_topic() {
+        var t = mac + $("#customtopic").val().toString();
+	var p = $("#custommsg").val().toString();
+        mqtt_send(t, p);
+    }
+
+    function node_restart() {
+	var t = mac + "/node/restart"
+	var p = new Date().getTime() + " | " + id;
+	mqtt_send(t, p);
+    }
+
+    function node_heap() {
+        var t = mac + "/node/heap"
+        var p = new Date().getTime() + " | " + id;
+        mqtt_send(t, p);
+    }
+
+    function mqtt_send(t, p) {
+	var message = new Paho.MQTT.Message(p);
+	message.destinationName = t;
+	mqtt.send(message);
+    }
+
+    function logs_clear() {
+	$('#ws').html("");
+    }
+
+    </script>
+  </head>
+<body>
+<pre>
+<h1>Ufire Web Demo</h1>
+<div>
+&nbsp;&nbsp;&nbsp;Subscribed to: <input style="width:300px" type='text' id='topic' disabled />
+&nbsp;&nbsp;&nbsp;Status       : <input style="width:300px" type='text' id='status' disabled />
+</div>
+<div>
+
+&nbsp;&nbsp;&nbsp;<input id="customtopic" type="text" style="width:300px" value="/cmd/api" /> &nbsp;&nbsp;&nbsp;<input id="custommsg" type="text" style="width:420px" value='api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")' />
+&nbsp;&nbsp;&nbsp;<input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="custom_topic()" type="button" value="Custom Topic" /> 
+&nbsp;&nbsp;&nbsp;<input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="logs_clear()" id="logs_clear" type="button" value="Clear Logs" />
+</div>
+</pre>
+<div>
+   <div style="float:left;">
+   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">Node</span><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_restart()" type="button" value="Reboot" /><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_heap()" type="button" value="Heap" /><br/>
+   &nbsp;&nbsp;&nbsp;<input type=text id="heap" style="width:100px" value="" align=center /> <br/>
+   </div>
+   <div style="float:left;">
+   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">PH</span><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph()" type="button" value="Update PH" /><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph_temp()" type="button" value="PH Temp" /><br/>
+   &nbsp;&nbsp;&nbsp;<input type=text id="ph" style="width:100px" value="" align=center /> <br/>
+   &nbsp;&nbsp;&nbsp;<input type=text id="ph_temp" style="width:100px" value="" align=center /> <br/>
+   </div>
+   <div style="float:left;">
+   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">EC</span><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec()" type="button" value="Update EC" /><br/>
+   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec_temp()" type="button" value="EC Temp" /><br/>
+   &nbsp;&nbsp;&nbsp;<input type=text id="ec" style="width:100px" value="" align=center /> <br/>
+   &nbsp;&nbsp;&nbsp;<input type=text id="ec_temp" style="width:100px" value="" align=center /> <br/>
+   </div>
+
+   <div style="clear:both"></div>
+</div>
+<pre>
+<div style="height:300px;width: 1200px;overflow:auto">
+   <ul style="position:relative;width: 600px" id='ws' style="font-family: 'Courier New', Courier, monospace;"></ul>
+</div>
+
+</pre>
+</body>
+</html>
