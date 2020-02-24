@@ -1,7 +1,7 @@
-NodeMCU Lua port of the [μFire](https://ufire.co) library for Isolated ISE/EC Probes Interfaces: https://ufire.co
+NodeMCU Lua port of the [μFire](https://ufire.co) library for Isolated ISE/EC sensors interfaces: https://ufire.co
 
-# Isolated PH/ORP/EC sensors Interface
-Extends support for μFire Isolated ec/ph/orp probes interfaces to NodeMCU firmware based devices.
+# Lua module for μFire Isolated sensors interfaces
+Extends support for μFire interfaces to NodeMCU firmware based devices.
 
 Original library for [EC Probe Interface](https://github.com/u-fire/Isolated_EC) (Arduino, Rust and Python) <br/>
 Original library for [ISE PH/ORP Interface](https://github.com/u-fire/Isolated_ISE) (Arduino, Rust and Python) <br/>
@@ -123,8 +123,8 @@ example:<br/>
  api.useTemperatureCompensation(0x3f, 1, 38, ecprobe true|false)
  api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")
  api.getTemperatureCompensation(0x3f, 38, "/ise/temp/compensation")
- api.reset(0x3c, true)
- api.reset(0x3f, false)
+ api.reset(0x3c, true, topic)
+ api.reset(0x3f, false, topic)
  api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
  api.getCalibrate(0x3f, 9, "/ise/calibrate/offset")
  api.getCalibrate(0x3c, 17, "/ec/calibrate/ref/high")

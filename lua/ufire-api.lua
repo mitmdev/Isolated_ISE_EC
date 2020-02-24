@@ -65,8 +65,8 @@ function api.getTempCoefficient() -- ec only
     return ret
 end
 
---api.reset(ecprobe, topic)
-function api.reset(dev_addr, ecprobe)
+--api.reset(dev_addr, ecprobe, topic)
+function api.reset(dev_addr, ecprobe, topic)
     io._reset_register(dev_addr, ecprobe and 33 or 9)
     io._reset_register(dev_addr, ecprobe and 17 or 13)
     io._reset_register(dev_addr, ecprobe and 21 or 17)
