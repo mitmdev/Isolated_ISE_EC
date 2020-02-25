@@ -2,8 +2,8 @@ local io = {}
 local bit, i2c, tmr = bit, i2c, tmr
 local id = 0
 function io._read_byte(dev_addr)
-    local data = 0x00
     local t = 10000
+    local data = 0x00    
     i2c.start(id)
     if i2c.address(0, dev_addr, i2c.RECEIVER) == true then
         data = i2c.read(id, 1)        
@@ -12,7 +12,7 @@ function io._read_byte(dev_addr)
     i2c.stop(id)
     return data
 end
-function io._write_byte(dev_addr, reg_addr, data, res_to)    
+function io._write_byte(dev_addr, reg_addr, data, res_to)        
     local t = 10000
     i2c.start(id)
     i2c.address(id, dev_addr, i2c.TRANSMITTER)

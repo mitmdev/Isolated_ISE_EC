@@ -23,6 +23,7 @@
     <script src="./mqttws31.js" type="text/javascript"></script>
     <script src="jquery.min.js" type="text/javascript"></script>
     <script src="config.js" type="text/javascript"></script>
+    <script src="ufire.js" type="text/javascript"></script>
 
     <script type="text/javascript">
     var mqtt;
@@ -85,7 +86,7 @@
 	}
 	*/
 	var ts = new Date().getTime();
-	var color = topic.indexOf("/get") > -1 ? 'red' : 'green';
+	var color = topic.indexOf("/get") > -1 || topic.indexOf("/cmd/api") > -1 || topic.indexOf("/node") > -1 ? 'red' : 'green';
         $('#ws').prepend('<li style="color:'+color+'">' + data + " | " + ts + " : " + topic + ' = ' + payload + '</li>');
 
 	topic = topic.replace(mac, '');
@@ -110,11 +111,105 @@
 		break;
 	}
 
+        topic = topic.replace(/\//g, "_");
+        topic = 'txt' + topic
+        if( document.getElementById(topic) ) {
+                // alert(payload);
+                $("#"+topic).val(payload);
+        }
+
     };
 
     $(document).ready(function() {
         MQTTconnect();
+        $("#ec_regs").html(dump_regs(ec_regs,true));
+        //$("#ec_tmrs").html(dump_tmrs(ec_tmrs));
+        //$("#ec_bits").html(dump_obj(ec_bits));
+        $("#ise_regs").html(dump_regs(ise_regs,false));
+        //$("#ise_tmrs").html(dump_tmrs(ise_tmrs));
+        //$("#ise_bits").html(dump_obj(ise_bits));
+	$("#ec_cmds").html(controls(ec));
+	$("#ise_cmds").html(controls(ise));
+	$("#ec_cmd").html(dump_obj(ec_cmds));
+        $("#ise_cmd").html(dump_obj(ise_cmds));
+	//alert(ise_dev_addr);
+	setTimeout(update_registers, 5000);
     });
+
+    function update_registers() {
+	$(".registers").click();
+    }
+    function dump_obj(o) {
+	var ret = '';
+	for(var i in o)	
+	{
+		ret += '<div style="float:left;margin:1px;">';
+		ret += '<input style="margin:0px;font-size:7px;cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity=\'1\'" onMouseOver="this.style.opacity=\'0.6\'" type="button" ';
+		ret += 'id="'+ i + '" value="' + i + '" onclick="alert('+o[i]+')" /> <br>';
+		ret += '</div>';
+		//document.write(i + "=" + o[i] + '<br>');
+	}
+	ret += '<div style="clear:both"></div>';
+	return ret;
+    }
+
+    function read_reg(reg,tgt,b,t){
+	var cmd = '';
+	var dev_addr = t ? 0x3c : 0x3f;
+	var reg_addr = reg;
+	if(b == true) {		
+		cmd = 'pub("/'+tgt+'", io._read_register('+dev_addr+','+reg_addr+'));'
+	} else if(b == false) {
+		cmd = 'io._change_register('+dev_addr+','+reg_addr+'); pub("/'+tgt+'", string.byte(io._read_byte('+dev_addr+')));';
+	} else if(b == null) {
+		cmd = false;
+	}
+	if(cmd) api_cmd(cmd);
+    }
+
+    function dump_regs(o,t) {
+        var ret = '';
+        for(var i in o) 
+        {
+                ret += '<div style="float:left;">';
+                ret += '<input class="registers" style="margin:0px;font-size:7px;cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity=\'1\'" onMouseOver="this.style.opacity=\'0.6\'" type="button" ';
+                ret += 'id="'+ i + '" value="' + i + '" onclick="read_reg('+o[i][0]+',\''+o[i][1]+'\','+o[i][2]+', '+t+')" /> <br>';
+		ret += '<input style="border: 1px solid black;box-shadow: none;width:100px" type="text" id="txt_'+ i + '" value="" /> <br>';
+                ret += '</div>';
+                //document.write(i + "=" + o[i] + '<br>');
+        }
+        ret += '<div style="clear:both"></div>';
+        return ret;
+    }
+
+    function dump_tmrs(o) {
+        var ret = '';
+        for(var i in o) 
+        {
+                ret += '<div style="float:left;">';
+		ret += '<label style="font-size:6px">'+ i +'</label><br/>';
+                ret += '<input style="border: 1px solid black;box-shadow: none;width:100px" type="text" ';
+                ret += 'id="'+ i + '" value="' + o[i] + '" /> <br>';
+                ret += '</div>';
+                //document.write(i + "=" + o[i] + '<br>');
+        }
+        ret += '<div style="clear:both"></div>';
+        return ret;
+    }
+
+    function controls(o) {
+	var ret = '';
+	for(var i in o) {
+		ret += '<div style="float:left;">';
+		//ret += '<label style="font-size:6px">'+ i +'</label><br/>';
+		ret += '<input style="margin:0px;font-size:10px;cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity=\'1\'" onMouseOver="this.style.opacity=\'0.6\'" type="button" ';
+                ret += 'id="'+ i + '" value="' + i + '" onclick="api_cmd(this.name)" name="'+o[i]+'" /> <br>';
+                ret += '<input style="border: 1px solid black;box-shadow: none;width:100px" type="text" id="txt'+ i.replace(/\//g,'_') + '" value="" /> <br>';
+        	ret += '</div>';
+	}
+	ret += '<div style="clear:both"></div>';
+        return ret;
+    }
 
     function get_ph() {
 	var t = mac + "/get/ise/ph"
@@ -165,6 +260,11 @@
 	mqtt.send(message);
     }
 
+    function api_cmd(cmd){
+	var t = mac + "/cmd/api";
+	mqtt_send(t, cmd);
+    }
+
     function logs_clear() {
 	$('#ws').html("");
     }
@@ -174,46 +274,87 @@
 <body>
 <pre>
 <h1>Ufire Web Demo</h1>
-<div>
+</pre>
+<div id="cont">  
+<div id="left" style="float:left;width:39%;" align=left>
+	<div>
+	<pre>
+&nbsp;&nbsp;&nbsp;MQTT
+
 &nbsp;&nbsp;&nbsp;Subscribed to: <input style="width:300px" type='text' id='topic' disabled />
 &nbsp;&nbsp;&nbsp;Status       : <input style="width:300px" type='text' id='status' disabled />
-</div>
-<div>
+	</pre>
+	</div>
+	<div>
+	<pre>
+&nbsp;&nbsp;&nbsp;Topic       : <input id="customtopic" type="text" style="width:300px" value="/cmd/api" /> 
+&nbsp;&nbsp;&nbsp;Payload     : <input id="custommsg" type="text" style="width:420px" value='api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")' />
+&nbsp;&nbsp;&nbsp;              <input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="custom_topic()" type="button" value="Custom Topic" /> &nbsp;&nbsp;&nbsp;<input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="logs_clear()" id="logs_clear" type="button" value="Clear Logs" />
+	</pre>
+	</div>
 
-&nbsp;&nbsp;&nbsp;<input id="customtopic" type="text" style="width:300px" value="/cmd/api" /> &nbsp;&nbsp;&nbsp;<input id="custommsg" type="text" style="width:420px" value='api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")' />
-&nbsp;&nbsp;&nbsp;<input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="custom_topic()" type="button" value="Custom Topic" /> 
-&nbsp;&nbsp;&nbsp;<input style="border: 1px solid black;background: yellow;box-shadow: none;width:100px" onMouseOut="this.style.background='yellow'" onMouseOver="this.style.background='lime'" onclick="logs_clear()" id="logs_clear" type="button" value="Clear Logs" />
+	<div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_restart()" type="button" value="Reboot" /> <br/>
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px; margin-top:0px;" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_heap()" type="button" value="Reset" />
 </div>
-</pre>
-<div>
-   <div style="float:left;">
-   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">Node</span><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: red;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_restart()" type="button" value="Reboot" /><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_heap()" type="button" value="Heap" /><br/>
-   &nbsp;&nbsp;&nbsp;<input type=text id="heap" style="width:100px" value="" align=center /> <br/>
-   </div>
-   <div style="float:left;">
-   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">PH</span><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph()" type="button" value="Update PH" /><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph_temp()" type="button" value="PH Temp" /><br/>
-   &nbsp;&nbsp;&nbsp;<input type=text id="ph" style="width:100px" value="" align=center /> <br/>
-   &nbsp;&nbsp;&nbsp;<input type=text id="ph_temp" style="width:100px" value="" align=center /> <br/>
-   </div>
-   <div style="float:left;">
-   &nbsp;&nbsp;&nbsp;<span style="margin-left:20px;margin-right:20px;">EC</span><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec()" type="button" value="Update EC" /><br/>
-   &nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec_temp()" type="button" value="EC Temp" /><br/>
-   &nbsp;&nbsp;&nbsp;<input type=text id="ec" style="width:100px" value="" align=center /> <br/>
-   &nbsp;&nbsp;&nbsp;<input type=text id="ec_temp" style="width:100px" value="" align=center /> <br/>
-   </div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="node_heap()" type="button" value="Heap" /> <br/>
+&nbsp;&nbsp;&nbsp;<input type=text id="heap" style="width:100px" value="" align=center />
+</div>
 
-   <div style="clear:both"></div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph()" type="button" value="Update PH" /> <br/>
+&nbsp;&nbsp;&nbsp;<input type=text id="ph" style="width:100px" value="" align=center />
 </div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ph_temp()" type="button" value="PH Temp" /> <br/>
+&nbsp;&nbsp;&nbsp;<input type=text id="ph_temp" style="width:100px" value="" align=center />
+</div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec()" type="button" value="Update EC" /><br/>
+&nbsp;&nbsp;&nbsp;<input type=text id="ec" style="width:100px" value="" align=center />
+</div>
+<div style="float:left;">
+&nbsp;&nbsp;&nbsp;<input style="cursor:pointer;background: lime;border: 1px solid black;box-shadow: none;width:100px" onMouseOut="this.style.opacity='1'" onMouseOver="this.style.opacity='0.6'" onclick="get_ec_temp()" type="button" value="EC Temp" /><br/>
+&nbsp;&nbsp;&nbsp;<input type=text id="ec_temp" style="width:100px" value="" align=center />
+</div>
+
+<div style="clear:both"></div>
+	</div>
+
+</div>
+<div id="right" style="float:left; width:60%;">
+	<div id="right" style="float:left;">
+        <div style="height:380px;width: 1100px;overflow:auto">
+          <pre>
+           MQTT Logs
+           <ul style="position:relative;width: 600px" id='ws' style="font-family: 'Courier New', Courier, monospace;"></ul>
+          </pre>
+        </div>
+
+</div>
+</div>
+<div style="clear:both"></div>
+
 <pre>
-<div style="height:300px;width: 1200px;overflow:auto">
-   <ul style="position:relative;width: 600px" id='ws' style="font-family: 'Courier New', Courier, monospace;"></ul>
+<div align=center id="debug">DEBUG
+<hr/>
+<div id=ec_cmd></div>
+<div id=ec_cmds></div>
+<div id=ec_regs></div>
+<!--<div id=ec_tmrs></div>
+<div id=ec_bits></div>-->
+
+<div id=ise_cmd></div>
+<div id=ise_cmds></div>
+<div id=ise_regs></div>
+<!--<div id=ise_tmrs></div>
+<div id=ise_bits></div>-->
 </div>
 
 </pre>
+
 </body>
 </html>
+

@@ -108,8 +108,8 @@ ecprobe = false => ise interface
 ~~~
 example:<br/>
 ~~~
- api.reset(0x3c, true)        => reset ec registers
- api.reset(0x3f, false)       => reset ise registers
+ api.reset(0x3c, true,  topic) => reset ec registers
+ api.reset(0x3f, false, topic) => reset ise registers
 ~~~
 ###### Shared API
 ~~~

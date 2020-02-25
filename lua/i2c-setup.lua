@@ -5,12 +5,10 @@ local i2c = i2c
 function i2c_setup(sda,scl)
     i2c.setup(id, sda, scl, i2c.FASTPLUS)    
 end
-
 function i2c_device_check(dev_addr)
     i2c.start(id)
-    local resCode = i2c.address(id, dev_addr, i2c.TRANSMITTER)
+    local ret = i2c.address(id, dev_addr, i2c.TRANSMITTER)
     i2c.stop(id)
-    return resCode
+    return ret
 end
-
 i2c_setup(sda,scl)

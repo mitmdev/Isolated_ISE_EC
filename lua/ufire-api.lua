@@ -48,7 +48,7 @@ end
 --api.getTempConstant()
 function api.getTempConstant() -- ec only
     local ret = io._read_register(0x3c, 45)
-    mqtt_pub("/ec/temp/costant", ret)
+    mqtt_pub("/ec/temp/constant", ret)
     return ret
 end
 
