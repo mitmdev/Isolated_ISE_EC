@@ -110,6 +110,18 @@ local port = 1883
 ```
 
 <br/>
+Please refer to "MQTT topics" section for an explaination of how to use the api.<br/><br/>
+
+Switching:
+~~~
+local minimal = true
+~~~
+to
+~~~
+local minimal = "http"
+~~~
+in `init.lua`, enables wifi and an integrated web server, reachable at your esp8266's IP address.<br/>
+Please refer to "Embedded http server" section below for api specifications.<br/><br/>
 
 ## API Calls
 For shared api calls, when needed, choose the target interface, setting boolean `ecprobe` to `true` for ec interface, `false` for ise one.<br/>
@@ -119,8 +131,8 @@ ecprobe = false => ise interface
 ~~~
 example:<br/>
 ~~~
- api.reset(0x3c, true,  topic) => reset ec registers
- api.reset(0x3f, false, topic) => reset ise registers
+ api.setDualPointCalibration(refLow, refHigh, readLow, readHigh, true)  => ec  dual point calibration
+ api.setDualPointCalibration(refLow, refHigh, readLow, readHigh, false) => ise dual point calibration
 ~~~
 ###### Shared API
 ~~~
@@ -278,19 +290,8 @@ Follows up a screenshot showing connection and message exchange:<br/>
 
 
 ## Embedded http server
-
-Switching:
-~~~
-local minimal = true
-~~~
-to
-~~~
-local minimal = "http"
-~~~
-in `init.lua`, enables wifi and an integrated web server, reachable at your esp8266's IP address.<br/>
 This is a "standalone" setup, no broker is needed. 
 Wifi connection parameters are defined in `init-wifi.lua`.<br/>
- 
 Please note that only a small subset of functions is implemented, due to memory limits.<br/>
 For shared keys, please use value `1` for ec interface, `0` for ise one, e.g.:
 
