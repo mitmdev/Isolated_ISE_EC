@@ -38,6 +38,7 @@ function api.getTemperatureCompensation(dev_addr, tgt_reg, topic)
     io._change_register(dev_addr, tgt_reg)
     local ret = bit.isset(string.byte(io._read_byte(dev_addr)), 1)
     mqtt_pub(topic, ret and "yes" or "no")
+    return ret
 end
 
 --api.setTempConstant(temp_constant)
@@ -152,7 +153,8 @@ function api.getVersion(dev_addr, dev_reg, topic)
 end
 
 function mqtt_pub(topic,msg)
-    if minimal == false then pub(topic, msg) end
+    if minimal == "mqtt" then pub(topic, msg) 
+    elseif minimal == "http" then return msg end
 end
 
 return api

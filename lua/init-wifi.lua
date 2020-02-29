@@ -1,6 +1,6 @@
 --
-local SSID = "GROWROOM"
-local KEY  = "12345678"
+local SSID = "UFIRE"
+local KEY  = "PASSWORD"
 --
 local wifiT = nil
 local wifi = wifi
@@ -23,7 +23,8 @@ function wait_for_wifi_conn()
             wifiT:unregister()
             require('i2c-setup')            
             require('ufire-i2c')            
-            require('mqtt-client')
+            if minimal == "http" then require('httpd-server')
+            elseif minimal == "mqtt" then require('mqtt-client') end
             collectgarbage()
         end
     end)

@@ -13,14 +13,14 @@ These scripts are written in [Lua](www.lua.org) for NodeMCU firmware.<br/>
 Take a look at the following output, showing my setup, to check target sdk and modules to enable at build stage (*) <br/>
 ~~~
 NodeMCU 3.0.0.0
-	branch: master
-	commit: 71a182caa7841cbb478ed90ede526dc881943c80
-	release: 3.0-master_20190907 +1
-	release DTS: 
-	SSL: false
-	build type: float
-	LFS: 0x0
-	modules: bit,file,i2c,mqtt,net,node,spi,struct,tmr,uart,wifi
+        branch: master
+        commit: 71a182caa7841cbb478ed90ede526dc881943c80
+        release: 3.0-master_20190907 +1
+        release DTS: 
+        SSL: false
+        build type: float
+        LFS: 0x0
+        modules: bit,file,i2c,mqtt,net,node,spi,struct,tmr,uart,wifi
  build 2020-01-25 00:55 powered by Lua 5.1.4 on SDK 3.0.1-dev(fce080e)
 ~~~
 (*)
@@ -55,8 +55,19 @@ Clone the repository
 ~~~
 git clone https://github.com/mitmdev/Isolated_ISE_EC.git --depth=1
 ~~~
-Upload all the .lua files in the lua/ folder to ESP, leaving `init.lua` for last one.<br/>
+Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for last one.<br/><br/>
+
 The default minimal configuration simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
+Furthermore, two other alternative configurations are proposed.<br/><br/>
+
+The "full-featured" setup, requires the following external components:<br>
+- HTTP server (apache, Nginx...) hosting the demo page
+- MQTT broker (mosquitto with websockets support)
+normally hosted on a rpi.<br/>
+The MQTT protocol is used to accomplish communication with the module.<br/><br/>
+
+The "standalone" configuration, instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/><br/>
+
 
 Switching:
 ~~~
@@ -64,12 +75,12 @@ local minimal = true
 ~~~
 to
 ~~~
-local minimal = false
+local minimal = "mqtt"
 ~~~
 in `init.lua`, enables wifi and mqtt support.<br/>
-You will need to customize wifi connection parameters in `init-wifi-mqtt.lua` and mqtt broker configuration in `mqtt-client.lua`, modifying the following variables accordingly to your setup.
+You will need to customize wifi connection parameters in `init-wifi.lua` and mqtt broker configuration in `mqtt-client.lua`, modifying the following variables accordingly to your setup.
 <br/>
-`init-wifi-mqtt.lua`:
+`init-wifi.lua`:
 ~~~
 local SSID = "SSID"
 local KEY  = "PASSWORD"
@@ -86,7 +97,7 @@ Follows up an example configuration, valid for a wireless network with SSID *UFI
 
 <br/>
 
-`init-wifi-mqtt.lua`:
+`init-wifi.lua`:
 ```
 local SSID = "UFIRE"
 local KEY  = "PASSWORD"
@@ -98,6 +109,7 @@ local pass = "ufire"
 local host = "192.168.10.240"
 local port = 1883
 ```
+
 <br/>
 
 ## API Calls
@@ -119,8 +131,8 @@ example:<br/>
  api.measure(0x3f, 39, 80, 1, 250, "/ise/ph")
  api.setTemp(0x3c, 5, tempC, "/ec/set/temp")
  api.setTemp(0x3f, 5, tempC, "/ise/set/temp")
- api.useTemperatureCompensation(0x3c, 1, 54, ecprobe true|false)
- api.useTemperatureCompensation(0x3f, 1, 38, ecprobe true|false)
+ api.useTemperatureCompensation(0x3c, 1, 54, true|false)
+ api.useTemperatureCompensation(0x3f, 1, 38, true|false)
  api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")
  api.getTemperatureCompensation(0x3f, 38, "/ise/temp/compensation")
  api.reset(0x3c, true, topic)
@@ -161,9 +173,9 @@ example:<br/>
 ## MQTT Topics
 Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
 ~~~
- wifi_mac_of_esp8266/get/[ise|ec]/[temp|ph|ec]	[Measurement api]
- wifi_mac_of_esp8266/node/[heap|restart]	[Node api]
- wifi_mac_of_esp8266/cmd/api			[payload representing command to execute on esp]
+ wifi_mac_of_esp8266/get/[ise|ec]/[temp|ph|ec]  [Measurement api]
+ wifi_mac_of_esp8266/node/[heap|restart]        [Node api]
+ wifi_mac_of_esp8266/cmd/api                    [payload representing command to execute on esp]
 ~~~
 ###### Measurement
  ~~~
@@ -183,21 +195,62 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  Command topic  : 00:11:22:33:44:55/get/ec/ec
  Response topic : 00:11:22:33:44:55/ec/ec
 ~~~
-###### ~~Calibration~~
+###### Calibration
+ Please use the generic topic:
+ ~~~
+ wifi_mac_of_esp8266/cmd/api
 ~~~
- Command topic  : 00:11:22:33:44:55/set/ise/reflow
- Command topic  : 00:11:22:33:44:55/set/ise/refhigh
- Command topic  : 00:11:22:33:44:55/set/ise/readlow
- Command topic  : 00:11:22:33:44:55/set/ise/readhigh
- Command topic  : 00:11:22:33:44:55/set/ise/single
- Command topic  : 00:11:22:33:44:55/set/ise/double
- Command topic  : 00:11:22:33:44:55/set/ec/offset
- Command topic  : 00:11:22:33:44:55/set/ec/reflow
- Command topic  : 00:11:22:33:44:55/set/ec/refhigh
- Command topic  : 00:11:22:33:44:55/set/ec/readlow
- Command topic  : 00:11:22:33:44:55/set/ec/readhigh
- Command topic  : 00:11:22:33:44:55/reset/ise
- Command topic  : 00:11:22:33:44:55/reset/ec
+ and payload consisting in the command to execute, e.g.:
+~~~
+ api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
+~~~
+
+ ## Temperature
+ ~~~
+ api.setTemp(0x3c, 5, tempC, "/ec/set/temp")
+ api.setTemp(0x3f, 5, tempC, "/ise/set/temp")
+ api.useTemperatureCompensation(0x3c, 1, 54, true|false)
+ api.useTemperatureCompensation(0x3f, 1, 38, true|false)
+ api.getTemperatureCompensation(0x3c, 54, "/ec/temp/compensation")
+ api.getTemperatureCompensation(0x3f, 38, "/ise/temp/compensation")
+ ~~~
+
+ ## Read Calibration
+ ~~~
+ api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
+ api.getCalibrate(0x3f, 9, "/ise/calibrate/offset")
+ api.getCalibrate(0x3c, 17, "/ec/calibrate/ref/high")
+ api.getCalibrate(0x3f, 13, "ise/calibrate/ref/high")
+ api.getCalibrate(0x3c, 21, "/ec/calibrate/ref/low")
+ api.getCalibrate(0x3f, 17, "/ise/calibrate/ref/low")
+ api.getCalibrate(0x3c, 25, "/ec/calibrate/read/high")
+ api.getCalibrate(0x3f, 21, "/ise/calibrate/read/high")
+ api.getCalibrate(0x3c, 29, "/ec/calibrate/read/low")
+ api.getCalibrate(0x3f, 25, "/ise/calibrate/read/low")
+ ~~~
+
+ ## Calibrate
+ ~~~
+ api.calibrate(0x3c, 55, 20, 750, solution, true, "/ec/calibrate/single")
+ api.calibrate(0x3f, 39, 20, 250, solution, false, "/ise/calibrate/single")
+ api.calibrate(0x3c, 55, 10, 750, solution, true, "/ec/calibrate/low")
+ api.calibrate(0x3f, 39, 10, 250, solution, false, "/ise/calibrate/low")
+ api.calibrate(0x3c, 55, 8, 750, solution, true, "/ec/calibrate/high")
+ api.calibrate(0x3f, 39, 8, 250, solution, false, "/ise/calibrate/high")
+ api.setDualPointCalibration(refLow, refHigh, readLow, readHigh, ecprobe true|false)
+ ~~~
+
+ ## EC only
+ api.setTempConstant(tempC)
+ api.getTempConstant()
+ api.setTempCoefficient(temp_coef)
+ api.getTempCoefficient()
+ api.setCalibrateOffset(offset) [why ec only?]
+
+ ## Reset Calibration
+ ~~~
+ api.reset(0x3c, true, topic)
+ api.reset(0x3f, false, topic)
  ~~~
 
 ###### Node
@@ -213,22 +266,76 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
 <br/>
 
 ###### Websockets Demo
- Html page illustrating a simple interaction with sensors through the MQTT broker.<br/>
- We are using websockets here, so mosquitto needs to be compiled accordingly.<br/>
- Please customize your broker setting in `config.js`.<br/><br/>
- Follows up a screenshot showing connection and message exchange:<br/>
+Html page illustrating a simple interaction with sensors through the mosquitto MQTT broker.<br/>
+A running http server is required - pages are not hosted on the esp8266 itself.<br/>
+Also note that we are using websockets here, so mosquitto needs to be compiled accordingly.<br/><br/>
+
+Please customize your broker setting in `config.js`.<br/><br/>
+Follows up a screenshot showing connection and message exchange:<br/>
 
 ![websockets-demo.html](demo.png)
 
+
+## Embedded http server
+
+Switching:
+~~~
+local minimal = true
+~~~
+to
+~~~
+local minimal = "http"
+~~~
+in `init.lua`, enables wifi and an integrated web server, reachable at your esp8266's IP address.<br/>
+This is a "standalone" setup, no broker is needed. 
+Wifi connection parameters are defined in `init-wifi.lua`.<br/>
+ 
+Please note that only a small subset of functions is implemented, due to memory limits.<br/>
+For shared keys, please use value `1` for ec interface, `0` for ise one, e.g.:
+
+```
+http://ip_address_of_esp8266/getCalibrateOffset=1	=> returns the ec  interface Calibrate Offset Register
+http://ip_address_of_esp8266/getCalibrateOffset=0	=> returns the ise interface Calibrate Offset Register
+```
+
+###### WEB API
+```
+-- node
+/reboot=1
+/heap=1
+
+-- ise
+/ise_mv=1
+/ise_temp=1
+
+-- ec
+/ec_ec=1
+/ec_temp=1
+
+-- shared keys
+/getCalibrateOffset=1|0
+/getCalibrateRefHigh=1|0
+/getCalibrateRefLow=1|0
+/getCalibrateReadHigh=1|0
+/getCalibrateReadLow=1|0
+/getTemperatureCompensation=1|0
+/getTempConstant=1|0
+/getTempCoefficient=1|0
+/getFirmware=1|0
+/getVersion=1|0
+
+```
+
+
 ## Final thoughts
- TODO
+TODO
 
 ###### Memory limits
  Due to ESP8266 memory limitations, it was impossible to export the whole set of APIs to the MQTT interface.<br/>
  Therefore, only the main functions have been made directly available (for implemented MQTT topics, see Measurement api)<br/>
  The remaining api calls are available to MQTT through the generic topic:</br>
 ~~~
- wifi_ac_of_esp8266/cmd/api
+ wifi_mac_of_esp8266/cmd/api
 ~~~
  and payload consisting in the command to execute, e.g.:
 ~~~
