@@ -59,11 +59,12 @@ Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for
 
 The default minimal configuration simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
 Furthermore, to access the api, two other alternative configurations are proposed.<br/>
-The "full-featured" setup, requires the following external components:<br>
+The "full-featured" setup, requires the following external components (normally hosted on a raspberry pi):<br>
 - HTTP server (apache, Nginx...) hosting the demo page
 - MQTT broker (mosquitto with websockets support)
-normally hosted on a rpi.<br/>
+
 The MQTT protocol is used to accomplish communication with the module.<br/>
+
 The "standalone" configuration, instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/><br/>
 
 
