@@ -55,10 +55,10 @@ Clone the repository
 ~~~
 git clone https://github.com/mitmdev/Isolated_ISE_EC.git --depth=1
 ~~~
-Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for last one.<br/><br/>
+Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for last one.<br/>
 
 The default minimal configuration simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
-Furthermore, two other alternative configurations are proposed.<br/><br/>
+Furthermore, to access the api, two other alternative configurations are proposed.<br/><br/>
 
 The "full-featured" setup, requires the following external components:<br>
 - HTTP server (apache, Nginx...) hosting the demo page
@@ -205,7 +205,7 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
 ~~~
 
- ## Temperature
+ ###### Temperature
  ~~~
  api.setTemp(0x3c, 5, tempC, "/ec/set/temp")
  api.setTemp(0x3f, 5, tempC, "/ise/set/temp")
@@ -215,7 +215,7 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  api.getTemperatureCompensation(0x3f, 38, "/ise/temp/compensation")
  ~~~
 
- ## Read Calibration
+ ###### Read Calibration
  ~~~
  api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
  api.getCalibrate(0x3f, 9, "/ise/calibrate/offset")
@@ -229,7 +229,7 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  api.getCalibrate(0x3f, 25, "/ise/calibrate/read/low")
  ~~~
 
- ## Calibrate
+ ###### Calibrate
  ~~~
  api.calibrate(0x3c, 55, 20, 750, solution, true, "/ec/calibrate/single")
  api.calibrate(0x3f, 39, 20, 250, solution, false, "/ise/calibrate/single")
@@ -240,14 +240,16 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
  api.setDualPointCalibration(refLow, refHigh, readLow, readHigh, ecprobe true|false)
  ~~~
 
- ## EC only
+ ###### EC only
+ ~~~
  api.setTempConstant(tempC)
  api.getTempConstant()
  api.setTempCoefficient(temp_coef)
  api.getTempCoefficient()
  api.setCalibrateOffset(offset) [why ec only?]
+ ~~~
 
- ## Reset Calibration
+ ###### Reset Calibration
  ~~~
  api.reset(0x3c, true, topic)
  api.reset(0x3f, false, topic)
@@ -268,9 +270,9 @@ Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
 ###### Websockets Demo
 Html page illustrating a simple interaction with sensors through the mosquitto MQTT broker.<br/>
 A running http server is required - pages are not hosted on the esp8266 itself.<br/>
-Also note that we are using websockets here, so mosquitto needs to be compiled accordingly.<br/><br/>
+Also note that we are using websockets here, so mosquitto needs to be compiled accordingly.<br/>
 
-Please customize your broker setting in `config.js`.<br/><br/>
+Please customize your broker setting in `config.js`.<br/>
 Follows up a screenshot showing connection and message exchange:<br/>
 
 ![websockets-demo.html](demo.png)
@@ -300,19 +302,19 @@ http://ip_address_of_esp8266/getCalibrateOffset=0	=> returns the ise interface C
 
 ###### WEB API
 ```
--- node
+# node
 /reboot=1
 /heap=1
 
--- ise
+# ise
 /ise_mv=1
 /ise_temp=1
 
--- ec
+# ec
 /ec_ec=1
 /ec_temp=1
 
--- shared keys
+# shared keys
 /getCalibrateOffset=1|0
 /getCalibrateRefHigh=1|0
 /getCalibrateRefLow=1|0
