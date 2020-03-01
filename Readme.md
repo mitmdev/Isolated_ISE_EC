@@ -57,7 +57,7 @@ git clone https://github.com/mitmdev/Isolated_ISE_EC.git --depth=1
 ~~~
 Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for last one.<br/>
 
-The default minimal configuration simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
+The default "minimal" configuration, simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
 Furthermore, to access the api, two other alternative configurations are proposed.<br/>
 The "full-featured" setup, requires the following external components (normally hosted on a raspberry pi):<br>
 - HTTP server (apache, Nginx...) hosting the demo page
@@ -65,9 +65,10 @@ The "full-featured" setup, requires the following external components (normally 
 
 The MQTT protocol is used to accomplish communication with the module.<br/>
 
-The "standalone" configuration, instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/><br/>
+The "standalone" configuration, instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/>
+The HTTP protocol is used here, to interface with probes.<br/><br/>
 
-
+###### Full-featered Setup
 Switching:
 ~~~
 local minimal = true
@@ -112,6 +113,7 @@ local port = 1883
 <br/>
 Please refer to "MQTT topics" section for an explaination of how to use the api.<br/><br/>
 
+###### Standalone Setup
 Switching:
 ~~~
 local minimal = true
