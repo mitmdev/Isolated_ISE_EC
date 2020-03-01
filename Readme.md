@@ -29,7 +29,6 @@ NodeMCU 3.0.0.0
 esptool.py --port /dev/ttyUSB0 erase_flash
 esptool.py --port /dev/ttyUSB0 write_flash -fm qio 0x00000 bin/0x00000.bin 0x10000 bin/0x10000.bin
 ~~~
-<br/>
 
 ## Warnings
 This code represents a very first attempt to port the python original library for RaspberryPi.<br/>
@@ -48,7 +47,7 @@ local id, scl, sda = 0, 1, 2
 
 ![wiring](wiring.jpg)
 
-See [ESP-8266 Pinout](https://nodemcu.readthedocs.io/en/master/modules/gpio/) for gpio reference<br/>
+See [ESP-8266 Pinout](https://nodemcu.readthedocs.io/en/master/modules/gpio/) for gpio reference.<br/>
 
 ## Using it
 Clone the repository
@@ -93,7 +92,6 @@ local host = "BROKER_IP"
 local port = BROKER_PORT
 ~~~
 Follows up an example configuration, valid for a wireless network with SSID *UFIRE* and key *PASSWORD*, broker located at address *192.168.10.240*, listening to default tcp port *1883* and requiring user (*ufire*) and password (*ufire*) authentication:
-<br/>
 
 <br/>
 
@@ -111,7 +109,7 @@ local port = 1883
 ```
 
 <br/>
-Please refer to "MQTT topics" section for an explaination of how to use the api.<br/><br/>
+**Please refer to "MQTT topics" section for an explaination of how to use the api.**<br/><br/>
 
 ###### Standalone Setup
 Switching:
@@ -123,7 +121,7 @@ to
 local minimal = "http"
 ~~~
 in `init.lua`, enables wifi and an integrated web server, reachable at your esp8266's IP address.<br/>
-Please refer to "Embedded http server" section below for api specifications.<br/><br/>
+**Please refer to "Embedded http server" section below for api specifications.**<br/><br/>
 
 ## API Calls
 For shared api calls, when needed, choose the target interface, setting boolean `ecprobe` to `true` for ec interface, `false` for ise one.<br/>
@@ -181,7 +179,6 @@ example:<br/>
  api.getTempCoefficient()
  api.setCalibrateOffset(offset) [why ec only?]
 ~~~
-<br/>
 
 ## MQTT Topics
 Topics are hardcoded in `mqtt-client.lua` and follow the following syntax:
