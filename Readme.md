@@ -109,8 +109,8 @@ local port = 1883
 ```
 
 <br/>
-**Please refer to "MQTT topics" section for an explaination of how to use the api.**<br/><br/>
 
+Please refer to [MQTT topics](https://github.com/mitmdev/Isolated_ISE_EC#mqtt-topics) section for an explaination of how to use the api.<br/><br/>
 ###### Standalone Setup
 Switching:
 ~~~
@@ -121,7 +121,7 @@ to
 local minimal = "http"
 ~~~
 in `init.lua`, enables wifi and an integrated web server, reachable at your esp8266's IP address.<br/>
-**Please refer to "Embedded http server" section below for api specifications.**<br/><br/>
+Please refer to [Embedded http server](https://github.com/mitmdev/Isolated_ISE_EC#embedded-http-server) section below, for api specifications.<br/><br/>
 
 ## API Calls
 For shared api calls, when needed, choose the target interface, setting boolean `ecprobe` to `true` for ec interface, `false` for ise one.<br/>
@@ -345,4 +345,3 @@ TODO
  See `api-ref.lua` for a list of available commands.
  
 ###### Code optimization
-
