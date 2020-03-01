@@ -110,7 +110,7 @@ local port = 1883
 
 <br/>
 
-Please refer to [MQTT topics](https://github.com/mitmdev/Isolated_ISE_EC#mqtt-topics) section for an explaination of how to use the api.<br/><br/>
+Please refer to [MQTT topics](https://github.com/mitmdev/Isolated_ISE_EC#mqtt-topics) section for an explanation of how to use the api.<br/><br/>
 ###### Standalone Setup
 Switching:
 ~~~
@@ -295,8 +295,8 @@ Please note that only a small subset of functions is implemented, due to memory 
 For shared keys, please use value `1` for ec interface, `0` for ise one, e.g.:
 
 ```
-http://ip_address_of_esp8266/getCalibrateOffset=1	=> returns the ec  interface Calibrate Offset Register
-http://ip_address_of_esp8266/getCalibrateOffset=0	=> returns the ise interface Calibrate Offset Register
+http://ip_address_of_esp8266/getCalibrateOffset=1  => returns the ec  interface Calibrate Offset Register
+http://ip_address_of_esp8266/getCalibrateOffset=0  => returns the ise interface Calibrate Offset Register
 ```
 
 ###### WEB API
