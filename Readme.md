@@ -45,7 +45,7 @@ local id, scl, sda = 0, 1, 2
 -- sda: PIN 2 (I/O index) = GPIO4 (D2)
 ```
 
-![wiring](wiring.jpg)
+![wiring](pics/wiring.jpg)
 
 See [ESP-8266 Pinout](https://nodemcu.readthedocs.io/en/master/modules/gpio/) for gpio reference.<br/>
 
@@ -285,7 +285,7 @@ Also note that we are using websockets here, so mosquitto needs to be compiled a
 Please customize your broker settings in `config.js`.<br/>
 Follows up a screenshot showing connection and message exchange:<br/>
 
-![websockets-demo.html](demo.png)
+![websockets-demo.html](pics/demo.png)
 
 
 ## Embedded http server
@@ -348,5 +348,5 @@ TODO
 
 ###### Pics
 
- ![transmitter](ec_ph.jpg)
+ <a href="pics/ec_ph_rotated.png"><img src="pics/ec_ph_resized.jpg" target="_blank" /></a><br/>
  EC/PH transmitter
