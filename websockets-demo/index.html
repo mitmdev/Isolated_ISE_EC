@@ -100,7 +100,10 @@
 			$("#ph_temp").val(v);
                 break;
                 case "/ec/ec":
-			$("#ec").val(payload + " uS");
+			var num = Math.round(payload*1000);
+			// num = payload*1000;
+			// num = Math.round((num + Number.EPSILON) * 100) / 100;			
+			$("#ec").val(num + " μS");
                 break;
                 case "/ec/temp":
 			var v = payload == -127 ? "N/A" : (Math.round( payload * 100 ) / 100 + " °C")
