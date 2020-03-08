@@ -343,5 +343,10 @@ TODO
  api.getCalibrate(0x3c, 33, "/ec/calibrate/offset")
 ~~~
  See `api-ref.lua` for a list of available commands.
- 
+
 ###### Code optimization
+
+###### Pics
+
+ ![transmitter](ec_ph.jpg)
+ EC/PH transmitter
