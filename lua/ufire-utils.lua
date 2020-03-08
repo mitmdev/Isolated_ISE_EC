@@ -9,3 +9,4 @@ function utils.round_total_digits(number)
     local l = 7 - string.len(string.format('%i', number))    
     return utils.round(number, l)
 end
+return utils

@@ -40,10 +40,10 @@ function io._read_register(dev_addr, reg_addr)
     local data = struct.unpack('f', temp)    
     return data
 end
-function io._write_register(dev_addr, reg_addr, f, r)    
-    if r == false then
-        local n = utils.round_total_digits(f)
-        f = struct.pack('f', n)
+function io._write_register(dev_addr, reg_addr, f, r)
+    if r ~= true then
+        local n = utils.round_total_digits(f)        
+        f = struct.pack('f', n)        
     end
     io._write_byte(dev_addr, reg_addr, f)    
 end

@@ -58,13 +58,13 @@ Upload all the .lua files in the lua/ folder to your ESP, leaving `init.lua` for
 
 The default "minimal" configuration, simply loads the ufire library and is intended mainly for api testing via ESPlorer or similar serial ttys.<br/>
 Furthermore, to access the api, two other alternative configurations are proposed.<br/>
-The "full-featured" setup, requires the following external components (normally hosted on a raspberry pi):<br>
+The [full-featured setup](https://github.com/mitmdev/Isolated_ISE_EC#full-featered-setup), requires the following external components (normally hosted on a raspberry pi):<br>
 - HTTP server (apache, Nginx...) hosting the demo page
 - MQTT broker (mosquitto with websockets support)
 
 The MQTT protocol is used to accomplish communication with the module.<br/>
 
-The "standalone" configuration, instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/>
+The [stand-alone configuration](https://github.com/mitmdev/Isolated_ISE_EC#standalone-setup), instead, doesn't require any external component, but is limitated by the memory available on the board (and/or my poor programming skills), therefore it's not recommended in production environment.<br/>
 The HTTP protocol is used here, to interface with probes.<br/><br/>
 
 ###### Full-featered Setup
@@ -282,7 +282,7 @@ Html page illustrating a simple interaction with sensors through the mosquitto M
 A running http server is required - pages are not hosted on the esp8266 itself.<br/>
 Also note that we are using websockets here, so mosquitto needs to be compiled accordingly.<br/>
 
-Please customize your broker setting in `config.js`.<br/>
+Please customize your broker settings in `config.js`.<br/>
 Follows up a screenshot showing connection and message exchange:<br/>
 
 ![websockets-demo.html](demo.png)
